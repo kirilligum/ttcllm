@@ -1,0 +1,16 @@
+server:
+  host: "0.0.0.0"
+  port: 4000
+
+model_list:
+  - model_name: "meta-llama/Meta-Llama-3.1-8B-Instruct-wait-6"
+    litellm_params:
+      model: "openai/meta-llama/Meta-Llama-3.1-8B-Instruct"
+      api_base: "https://api.deepinfra.com/v1/openai"
+      api_key: "YOUR_DEEPINFRA_API_KEY"
+      supports_system_message: true
+
+litellm_settings:
+  custom_provider_map:
+    - provider: "iterative-llm"
+      custom_handler: "custom_handler.iterative_llm"
