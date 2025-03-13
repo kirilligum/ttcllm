@@ -11,7 +11,7 @@ class MyCustomLLM(CustomLLM):
         )  # Remove "messages" from kwargs and store it
         kwargs.pop("model", None)  # Remove the incoming model value
         return litellm.completion(
-            model="gpt-4o-mini",  # Override model to gpt-4o-mini as required
+            model="llama-3.1-8b-instant",  # Override model changed to llama-3.1-8b-instant as required
             messages=messages,
             base_url=os.environ["GROQ_API_BASE"],
             api_key=os.environ["GROQ_API_KEY"],
