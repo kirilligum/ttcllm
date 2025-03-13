@@ -1,5 +1,5 @@
 import litellm
-from litellm import CustomLLM, completion, get_llm_provider
+from litellm.llms.custom_llm import CustomLLM
 
 
 class MyCustomLLM(CustomLLM):
