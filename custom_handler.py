@@ -43,15 +43,12 @@ class MyCustomLLM(CustomLLM):
 
             # Extract assistant reply from the response
             assistant_reply = response.choices[0].message.content
-            assistant_messages.append(assistant_reply)
+            round_message = f"Assistant: {assistant_reply}\nUser: wait, check your reasoning"
+            assistant_messages.append(round_message)
 
-            # Append the assistant reply to conversation history and prompt for further reasoning
-            conversation_history.append(
-                {"role": "assistant", "content": assistant_reply}
-            )
-            conversation_history.append(
-                {"role": "user", "content": "wait, check your reasoning"}
-            )
+            # Append the assistant reply and user prompt to conversation history
+            conversation_history.append({"role": "assistant", "content": assistant_reply})
+            conversation_history.append({"role": "user", "content": "wait, check your reasoning"})
 
         # Append the final prompt to trigger the final answer.
         conversation_history.append({"role": "user", "content": "final answer:"})
@@ -71,18 +68,20 @@ class MyCustomLLM(CustomLLM):
         total_completion_tokens += usage.get("completion_tokens", 0)
 
         final_message = final_response.choices[0].message.content
-        assistant_messages.append(final_message)
+        final_round = f"User: final answer:\nAssistant: {final_message}"
 
-        # Build the combined answer: include prior responses as a test-time compute block and append the final answer.
-        if len(assistant_messages) > 1:
+        # Build the combined answer: include iterative rounds as a test-time compute block and append the final round.
+        if assistant_messages:
             wrapped_llm_calls = [
                 f"<llm-call-{i}>\n{msg}\n</llm-call-{i}>"
-                for i, msg in enumerate(assistant_messages[:-1], start=1)
+                for i, msg in enumerate(assistant_messages, start=1)
             ]
             test_time_compute_block = "\n".join(wrapped_llm_calls)
-            combined_message = f"<test-time-compute>\n{test_time_compute_block}\n</test-time-compute>\n\n{final_message}"
+            combined_message = (
+                f"<test-time-compute>\n{test_time_compute_block}\n</test-time-compute>\n\n{final_round}"
+            )
         else:
-            combined_message = final_message
+            combined_message = final_round
 
         # Return a new ModelResponse containing the combined answer and aggregated token usage
         return litellm.ModelResponse(
