@@ -1,0 +1,20 @@
+model_list:
+  - model_name: g33
+    litellm_params:
+      model: groq/llama-3.3-70b-specdec
+      api_base: https://api.groq.com/openai/v1
+      api_key: os.environ/GROQ_API_KEY
+  - model_name: "my-custom-model"
+    litellm_params:
+      model: "my-custom-llm/my-model"
+
+litellm_settings:
+  custom_provider_map:
+    - {
+        "provider": "my-custom-llm",
+        "custom_handler": custom_handler.my_custom_llm,
+      }
+# general_settings:
+#   master_key: sk-1234
+#   database_url: "postgresql://litellm_user:gguest2190@localhost:5432/litellm"
+#   psql 'postgres://postgres.your-tenant-id:your-super-secret-and-long-postgres-password@localhost:5432/postgres'
