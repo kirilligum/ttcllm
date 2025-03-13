@@ -13,9 +13,11 @@ class MyCustomLLM(CustomLLM):
         )  # type: ignore
 
     async def acompletion(self, *args, **kwargs) -> litellm.ModelResponse:
+        messages = kwargs.get("messages")
+        kwargs.pop("model", None)  # Remove the incoming model value
         return litellm.completion(
-            model="gpt-4o-mini",
-            messages=kwargs.get("messages"),
+            model="gpt-4o-mini",  # Override model to gpt-4o-mini as required
+            messages=messages,
             **kwargs,
         )  # type: ignore
 
