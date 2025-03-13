@@ -1,4 +1,5 @@
 import asyncio
+import os
 import litellm
 from litellm.llms.custom_llm import CustomLLM
 
@@ -12,6 +13,8 @@ class MyCustomLLM(CustomLLM):
         return litellm.completion(
             model="gpt-4o-mini",  # Override model to gpt-4o-mini as required
             messages=messages,
+            base_url=os.environ["GROQ_API_BASE"],
+            api_key=os.environ["GROQ_API_KEY"],
         )  # type: ignore
 
     async def acompletion(self, *args, **kwargs) -> litellm.ModelResponse:
