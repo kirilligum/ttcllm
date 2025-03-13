@@ -75,7 +75,11 @@ class MyCustomLLM(CustomLLM):
 
         # Build the combined answer: include prior responses as a test-time compute block and append the final answer.
         if len(assistant_messages) > 1:
-            test_time_compute_block = "\n".join(assistant_messages[:-1])
+            wrapped_llm_calls = [
+                f"<llm-call-{i}>\n{msg}\n</llm-call-{i}>"
+                for i, msg in enumerate(assistant_messages[:-1], start=1)
+            ]
+            test_time_compute_block = "\n".join(wrapped_llm_calls)
             combined_message = f"<test-time-compute>\n{test_time_compute_block}\n</test-time-compute>\n\n{final_message}"
         else:
             combined_message = final_message
