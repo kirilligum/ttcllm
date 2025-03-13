@@ -24,12 +24,15 @@ class MyCustomLLM(CustomLLM):
         
         # Perform (n_iterations + 1) calls: one initial call plus iterative refinement steps.
         for i in range(n_iterations + 1):
+            new_kwargs = kwargs.copy()
+            new_kwargs.pop("api_key", None)
+            new_kwargs.pop("base_url", None)
             response = litellm.completion(
                 model=base_model,
                 messages=conversation_history,
                 base_url=os.environ["GROQ_API_BASE"],
                 api_key=os.environ["GROQ_API_KEY"],
-                **kwargs
+                **new_kwargs
             )  # type: ignore
             
             usage = response.usage
