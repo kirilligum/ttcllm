@@ -4,9 +4,33 @@ model_list:
       model: groq/llama-3.3-70b-specdec
       api_base: https://api.groq.com/openai/v1
       api_key: os.environ/GROQ_API_KEY
-  - model_name: "my-custom-model"
+  - model_name: "llama323-6"
     litellm_params:
-      model: "my-custom-llm/my-model"
+      model: "my-custom-llm/llama-3.2-3b-preview-wait-6"
+  - model_name: "llama323-16"
+    litellm_params:
+      model: "my-custom-llm/llama-3.2-3b-preview-wait-16"
+  - model_name: "llama3370-3"
+    litellm_params:
+      model: "my-custom-llm/llama-3.3-70b-specdec-wait-3"
+  - model_name: "llama3370-6"
+    litellm_params:
+      model: "my-custom-llm/llama-3.3-70b-specdec-wait-6"
+  - model_name: "llama3370-10"
+    litellm_params:
+      model: "my-custom-llm/llama-3.3-70b-specdec-wait-10"
+  - model_name: "llama3370-16"
+    litellm_params:
+      model: "my-custom-llm/llama-3.3-70b-specdec-wait-16"
+  - model_name: "llama3370r1-3"
+    litellm_params:
+      model: "my-custom-llm/deepseek-r1-distill-llama-70b-specdec-wait-3"
+  - model_name: "llama3370r1-6"
+    litellm_params:
+      model: "my-custom-llm/deepseek-r1-distill-llama-70b-specdec-wait-6"
+  - model_name: "llama3370r1-10"
+    litellm_params:
+      model: "my-custom-llm/deepseek-r1-distill-llama-70b-specdec-wait-10"
 
 litellm_settings:
   custom_provider_map:
