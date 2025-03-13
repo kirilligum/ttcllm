@@ -22,7 +22,7 @@ class MyCustomLLM(CustomLLM):
                     base_url=os.environ["GROQ_API_BASE"],
                     api_key=os.environ["GROQ_API_KEY"],
                 )  # type: ignore
-                conversation.append({"role": "assistant", "content": response})
+                conversation.append({"role": "assistant", "content": str(response)})
                 conversation.append({"role": "user", "content": "wait, check your reasoning"})
             conversation.append({"role": "user", "content": "final answer:"})
             final_response = litellm.completion(
@@ -31,14 +31,15 @@ class MyCustomLLM(CustomLLM):
                 base_url=os.environ["GROQ_API_BASE"],
                 api_key=os.environ["GROQ_API_KEY"],
             )  # type: ignore
-            return final_response
+            return str(final_response)
         else:
-            return litellm.completion(
+            response = litellm.completion(
                 model=incoming_model,
                 messages=messages,
                 base_url=os.environ["GROQ_API_BASE"],
                 api_key=os.environ["GROQ_API_KEY"],
             )  # type: ignore
+            return str(response)
 
     async def acompletion(self, *args, **kwargs) -> litellm.ModelResponse:
         return await asyncio.to_thread(self.completion, *args, **kwargs)
