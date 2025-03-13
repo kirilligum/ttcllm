@@ -11,7 +11,7 @@ class MyCustomLLM(CustomLLM):
     def completion(
         self, model: str, messages: List[dict], **kwargs
     ) -> litellm.ModelResponse:
-        # Extract N from model name (e.g., "my-custom-llm/llama-3.1-8b-instant-wait-6")
+        # Extract N from model name
         match = re.search(r"-wait-(\d+)$", model)
         n_iterations = min(int(match.group(1)) if match else 0, 20)
 
@@ -35,7 +35,6 @@ class MyCustomLLM(CustomLLM):
                 messages=conversation_history,
                 api_base=os.environ["GROQ_API_BASE"],
                 api_key=os.environ["GROQ_API_KEY"],
-                **new_kwargs
             )  # type: ignore
 
             usage = response.usage
@@ -47,9 +46,13 @@ class MyCustomLLM(CustomLLM):
             assistant_messages.append(assistant_reply)
 
             # Append the assistant reply to conversation history and prompt for further reasoning
-            conversation_history.append({"role": "assistant", "content": assistant_reply})
-            conversation_history.append({"role": "user", "content": "wait, check your reasoning"})
-        
+            conversation_history.append(
+                {"role": "assistant", "content": assistant_reply}
+            )
+            conversation_history.append(
+                {"role": "user", "content": "wait, check your reasoning"}
+            )
+
         # Append the final prompt to trigger the final answer.
         conversation_history.append({"role": "user", "content": "final answer:"})
 
@@ -61,7 +64,6 @@ class MyCustomLLM(CustomLLM):
             messages=conversation_history,
             api_base=os.environ["GROQ_API_BASE"],
             api_key=os.environ["GROQ_API_KEY"],
-            **new_kwargs
         )  # type: ignore
 
         usage = final_response.usage
