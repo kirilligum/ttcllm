@@ -25,17 +25,17 @@ class MyCustomLLM(CustomLLM):
         # Determine the base model (remove "-wait-<n>" if present)
         base_model = model[: match.start()] if match else model
 
-        # Perform (n_iterations + 1) calls: one initial call plus iterative refinement steps.
-        for i in range(n_iterations + 1):
+        # Perform n_iterations iterative refinement steps.
+        for i in range(n_iterations):
             new_kwargs = kwargs.copy()
             new_kwargs.pop("api_key", None)
-            new_kwargs.pop("base_url", None)
+            new_kwargs.pop("api_base", None)
             response = litellm.completion(
                 model=base_model,
                 messages=conversation_history,
-                base_url=os.environ["GROQ_API_BASE"],
+                api_base=os.environ["GROQ_API_BASE"],
                 api_key=os.environ["GROQ_API_KEY"],
-                # **new_kwargs
+                **new_kwargs
             )  # type: ignore
 
             usage = response.usage
@@ -46,24 +46,37 @@ class MyCustomLLM(CustomLLM):
             assistant_reply = response.choices[0].message.content
             assistant_messages.append(assistant_reply)
 
-            # Append the full assistant reply to the conversation history
-            conversation_history.append(
-                {"role": "assistant", "content": assistant_reply}
-            )
+            # Append the assistant reply to conversation history and prompt for further reasoning
+            conversation_history.append({"role": "assistant", "content": assistant_reply})
+            conversation_history.append({"role": "user", "content": "wait, check your reasoning"})
+        
+        # Append the final prompt to trigger the final answer.
+        conversation_history.append({"role": "user", "content": "final answer:"})
 
-            # If not on the final iteration, ask the model to re-examine its reasoning
-            if i < n_iterations:
-                conversation_history.append(
-                    {"role": "user", "content": "wait, check your reasoning"}
-                )
+        new_kwargs = kwargs.copy()
+        new_kwargs.pop("api_key", None)
+        new_kwargs.pop("api_base", None)
+        final_response = litellm.completion(
+            model=base_model,
+            messages=conversation_history,
+            api_base=os.environ["GROQ_API_BASE"],
+            api_key=os.environ["GROQ_API_KEY"],
+            **new_kwargs
+        )  # type: ignore
 
-        # Build the combined answer by wrapping all but the final response
+        usage = final_response.usage
+        total_prompt_tokens += usage.get("prompt_tokens", 0)
+        total_completion_tokens += usage.get("completion_tokens", 0)
+
+        final_message = final_response.choices[0].message.content
+        assistant_messages.append(final_message)
+
+        # Build the combined answer: include prior responses as a test-time compute block and append the final answer.
         if len(assistant_messages) > 1:
             test_time_compute_block = "\n".join(assistant_messages[:-1])
-            final_message = assistant_messages[-1]
             combined_message = f"<test-time-compute>\n{test_time_compute_block}\n</test-time-compute>\n\n{final_message}"
         else:
-            combined_message = assistant_messages[0]
+            combined_message = final_message
 
         # Return a new ModelResponse containing the combined answer and aggregated token usage
         return litellm.ModelResponse(
